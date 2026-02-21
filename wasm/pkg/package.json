@@ -1,21 +1,26 @@
 {
   "name": "wasm-lib",
   "type": "module",
-  "description": "WASM utilities for React applications",
-  "version": "0.1.0",
+  "collaborators": [
+    "solana-keygen-web"
+  ],
+  "description": "WASM core for Solana Keygen Web — vanity address generation and utilities",
+  "version": "0.3.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vvs-jkr/react-wasm-utils"
+    "url": "https://github.com/vvs-jkr/solana-keygen-web"
   },
   "files": [
     "wasm_lib_bg.wasm",
     "wasm_lib.js",
+    "wasm_lib_bg.js",
     "wasm_lib.d.ts"
   ],
   "main": "wasm_lib.js",
   "types": "wasm_lib.d.ts",
   "sideEffects": [
+    "./wasm_lib.js",
     "./snippets/*"
   ]
 }

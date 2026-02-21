@@ -5,6 +5,10 @@ import topLevelAwait from 'vite-plugin-top-level-await';
 import path from 'path';
 export default defineConfig({
     plugins: [react(), wasm(), topLevelAwait()],
+    worker: {
+        format: 'es',
+        plugins: function () { return [wasm(), topLevelAwait()]; },
+    },
     resolve: {
         alias: {
             '~': path.resolve(__dirname, 'src'),

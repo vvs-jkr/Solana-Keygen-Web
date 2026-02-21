@@ -7,6 +7,11 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), wasm(), topLevelAwait()],
 
+  worker: {
+    format: 'es',
+    plugins: () => [wasm(), topLevelAwait()],
+  },
+
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'src'),
