@@ -21,6 +21,7 @@ export function CsvProcessor() {
     loadSample,
     clearAll,
     setCsvContent,
+    delimiter,
   } = useCsvParser()
 
   const { handleFileUpload } = useFileUpload()
@@ -35,11 +36,18 @@ export function CsvProcessor() {
 
   const canParse = hasWorker && csvInput.trim().length > 0
 
+  // Получаем номер строки ошибки, если есть
+  const errorLine = typeof error === 'object' && error?.line ? error.line : undefined
+
   return (
     <div className="csv-processor">
       <SampleSelector onLoadSample={loadSample} onFileUpload={onFileUpload} />
 
-      <CsvInput value={csvInput} onChange={setCsvContent} />
+      <CsvInput value={csvInput} onChange={setCsvContent} errorLine={errorLine} />
+
+      <div style={{ margin: '8px 0', color: '#888' }}>
+        Автоматически выбранный разделитель: <b>{delimiter}</b>
+      </div>
 
       <ParseControls
         onParse={parseCsv}
