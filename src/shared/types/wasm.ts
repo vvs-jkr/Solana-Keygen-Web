@@ -1,49 +1,30 @@
-// Типы для WASM операций
-export interface SortByKeyPayload {
-  data: Array<Record<string, unknown>>
-  key: string
+export interface VanitySearchPayload {
+  prefix: string
+  suffix: string
+  caseSensitive: boolean
+  batchSize: number
 }
 
-export interface DeepEqualPayload {
-  a: unknown
-  b: unknown
+export interface VanityFoundData {
+  address: string
+  publicKey: string
+  secretKey: string
 }
 
-export interface ParseCsvPayload {
-  csvText: string
-  delimiter?: string
-  hasHeader?: boolean
-}
+export type WasmOperationType = 'vanity-search' | 'vanity-stop'
 
-export interface ParseCsvEnhancedPayload {
-  csvText: string
-  delimiter: string
-}
+export type WasmPayload = VanitySearchPayload
 
-export type WasmOperationType = 'sortByKey' | 'deepEqual' | 'parseCsv' | 'parseCsvEnhanced'
+export type WasmResult = VanityFoundData
 
-export type WasmPayload =
-  | SortByKeyPayload
-  | DeepEqualPayload
-  | ParseCsvPayload
-  | ParseCsvEnhancedPayload
-
-// Результаты WASM операций
-export type SortByKeyResult = Array<Record<string, unknown>>
-export type DeepEqualResult = boolean
-export type ParseCsvResult = Array<Record<string, string | number>>
-
-export type WasmResult = SortByKeyResult | DeepEqualResult | ParseCsvResult
-
-// Сообщения воркера
 export interface WorkerMessage {
-  status: 'ready' | 'success' | 'error'
+  status: 'ready' | 'success' | 'error' | 'progress' | 'stopped'
   id?: number
   data?: WasmResult
+  checked?: number
   error?: string
 }
 
-// Алиас для обратной совместимости
 export type WorkerResponse = WorkerMessage
 
 export interface WorkerTask<T = WasmResult> {

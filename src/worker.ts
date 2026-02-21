@@ -1,114 +1,61 @@
-// Worker для WASM операций
-console.log('[worker] === WASM WORKER STARTING ===')
-
-import type {
-  WorkerRequest,
-  WorkerMessage,
-  SortByKeyPayload,
-  DeepEqualPayload,
-  ParseCsvPayload,
-  ParseCsvEnhancedPayload,
-} from './shared/types'
+import type { WorkerRequest, WorkerMessage, VanitySearchPayload } from './shared/types'
 import { loadWasm } from './shared/api/wasm-loader'
 
-// Импорт реального WASM модуля
 let wasmModule: any = null
+let stopRequested = false
 
-// Инициализация WASM модуля
 async function initWasm() {
-  try {
-    console.log('[worker] Loading WASM module...')
-
-    // Загружаем WASM модуль через библиотеку
-    wasmModule = await loadWasm()
-    console.log('[worker] WASM module loaded successfully!')
-
-    return wasmModule
-  } catch (error) {
-    console.error('[worker] Failed to load WASM:', error)
-    throw error
-  }
+  wasmModule = await loadWasm()
+  self.postMessage({ status: 'ready' } as WorkerMessage)
 }
 
-// Инициализируем при загрузке worker
-initWasm()
-  .then(wasm => {
-    wasmModule = wasm
-    console.log('[worker] WASM ready!')
-    self.postMessage({ status: 'ready' } as WorkerMessage)
-  })
-  .catch(error => {
-    console.error('[worker] Initialization failed:', error)
-    self.postMessage({
-      status: 'error',
-      id: -1,
-      error: `Init failed: ${error.message}`,
-    } as WorkerMessage)
-  })
+initWasm().catch(error => {
+  self.postMessage({
+    status: 'error',
+    id: -1,
+    error: `Init failed: ${error.message}`,
+  } as WorkerMessage)
+})
 
-// Обработчик сообщений
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const { id, type, payload } = event.data
 
-  console.log(`[worker] Processing task: ${type} (id: ${id})`)
-
-  if (!wasmModule) {
-    self.postMessage({
-      status: 'error',
-      id,
-      error: 'WASM module not initialized',
-    } as WorkerMessage)
+  if (type === 'vanity-stop') {
+    stopRequested = true
     return
   }
 
-  try {
-    let result: unknown
+  if (!wasmModule) {
+    self.postMessage({ status: 'error', id, error: 'WASM not initialized' } as WorkerMessage)
+    return
+  }
 
-    switch (type) {
-      case 'deepEqual': {
-        const deepEqualPayload = payload as DeepEqualPayload
-        result = wasmModule.deep_equal(deepEqualPayload.a, deepEqualPayload.b)
-        break
+  if (type === 'vanity-search') {
+    const { prefix, suffix, caseSensitive, batchSize } = payload as VanitySearchPayload
+    stopRequested = false
+    let totalChecked = 0
+
+    while (!stopRequested) {
+      const result = wasmModule.find_vanity_batch(prefix, suffix, caseSensitive, batchSize)
+      totalChecked += batchSize
+
+      if (result !== null) {
+        const found = JSON.parse(result)
+        self.postMessage({ status: 'success', id, data: found } as WorkerMessage)
+        return
       }
 
-      case 'sortByKey': {
-        const sortPayload = payload as SortByKeyPayload
-        result = wasmModule.sort_by_key(sortPayload.data, sortPayload.key)
-        break
-      }
+      self.postMessage({ status: 'progress', id, checked: totalChecked } as WorkerMessage)
 
-      case 'parseCsv': {
-        const csvPayload = payload as ParseCsvPayload
-        result = wasmModule.parse_csv(csvPayload.csvText)
-        break
-      }
-
-      case 'parseCsvEnhanced': {
-        const enhancedPayload = payload as ParseCsvEnhancedPayload
-        result = wasmModule.parse_csv(enhancedPayload.csvText)
-        break
-      }
-
-      default:
-        throw new Error(`Unknown task type: ${type}`)
+      // yield to event loop so stop message can be processed
+      await new Promise(resolve => setTimeout(resolve, 0))
     }
 
-    console.log(`[worker] Task ${type} completed successfully`)
-    self.postMessage({
-      status: 'success',
-      id,
-      data: result,
-    } as WorkerMessage)
-  } catch (error) {
-    console.error(`[worker] Task ${type} failed:`, error)
-    self.postMessage({
-      status: 'error',
-      id,
-      error: String(error),
-    } as WorkerMessage)
+    self.postMessage({ status: 'stopped', id } as WorkerMessage)
+    return
   }
+
+  self.postMessage({ status: 'error', id, error: `Unknown task type: ${type}` } as WorkerMessage)
 }
 
-console.log('[worker] === WORKER READY ===')
-
-export {} // Делаем файл ES модулем
+export {}
