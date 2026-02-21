@@ -76,8 +76,8 @@ junit.xml
 .tern-port
 
 # Rust / WebAssembly
-wasm-lib/target/
-wasm-lib/.cargo/
+wasm/target/
+wasm/.cargo/
 target/
 wasm-pack.log
 

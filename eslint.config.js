@@ -10,21 +10,17 @@ import eslintConfigPrettier from 'eslint-config-prettier'
 export default [
   {
     ignores: [
-      'packages/demo/public/wasm/**',
-      'packages/demo/dist/**',
-      'packages/react-wasm-utils/dist/**',
-      'packages/react-wasm-utils/wasm-lib/pkg/**',
-      'packages/react-wasm-utils/wasm-lib/target/**',
+      'public/wasm/**',
+      'wasm/pkg/**',
+      'wasm/target/**',
       'node_modules/**',
       'dist/**',
-      'build/**',
-      '.env',
       '**/*.min.js',
       '**/*.bundle.js',
     ],
   },
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/setup.ts', '**/setup.js'],
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/setup.ts', '**/setup.js', '**/__mocks__/**/*.js'],
     languageOptions: {
       parserOptions: {
         project: undefined,
@@ -48,7 +44,6 @@ export default [
     files: [
       '**/vite.config.ts',
       '**/vitest.config.ts',
-      '**/webpack.config.cjs',
       '**/jest.config.cjs',
     ],
     languageOptions: {
@@ -65,7 +60,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'test/**/*.ts', 'test/**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

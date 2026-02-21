@@ -18,25 +18,17 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["packages/demo/src/*"],
-      "~/shared/*": ["packages/demo/src/shared/*"],
-      "~/entities/*": ["packages/demo/src/entities/*"],
-      "~/features/*": ["packages/demo/src/features/*"],
-      "~/widgets/*": ["packages/demo/src/widgets/*"],
-      "~/pages/*": ["packages/demo/src/pages/*"]
+      "~/*": ["src/*"],
+      "~/shared/*": ["src/shared/*"],
+      "~/entities/*": ["src/entities/*"],
+      "~/features/*": ["src/features/*"],
+      "~/widgets/*": ["src/widgets/*"],
+      "~/pages/*": ["src/pages/*"],
+      "~/app/*": ["src/app/*"],
+      "@wasm/*": ["wasm/pkg/*"]
     }
   },
-  "include": [
-    "packages/**/*.ts",
-    "packages/**/*.tsx",
-    "packages/**/*.js",
-    "packages/**/*.jsx",
-    "packages/**/*.cjs",
-    "packages/**/*.mjs",
-    "test/setup.ts",
-    "packages/demo/webpack.config.cjs",
-    "packages/demo/jest.config.cjs",
-    "packages/react-wasm-utils/jest.config.cjs"
-  ],
-  "exclude": ["**/node_modules", "**/dist", "**/build", "**/.next", "**/.cache"]
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist", "wasm/target"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

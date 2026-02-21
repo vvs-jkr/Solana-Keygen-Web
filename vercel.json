@@ -1,5 +1,5 @@
 {
   "buildCommand": "yarn build",
-  "outputDirectory": "packages/demo/dist",
+  "outputDirectory": "dist",
   "installCommand": "yarn install"
 }
