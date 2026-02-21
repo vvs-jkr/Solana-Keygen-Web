@@ -7,6 +7,7 @@ import type {
   SortByKeyPayload,
   DeepEqualPayload,
   ParseCsvPayload,
+  ParseCsvEnhancedPayload,
 } from './shared/types'
 import { loadWasm } from './shared/api/wasm-loader'
 
@@ -78,8 +79,13 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
 
       case 'parseCsv': {
         const csvPayload = payload as ParseCsvPayload
-        // Используем базовую функцию парсинга CSV из упрощенного WASM
         result = wasmModule.parse_csv(csvPayload.csvText)
+        break
+      }
+
+      case 'parseCsvEnhanced': {
+        const enhancedPayload = payload as ParseCsvEnhancedPayload
+        result = wasmModule.parse_csv(enhancedPayload.csvText)
         break
       }
 

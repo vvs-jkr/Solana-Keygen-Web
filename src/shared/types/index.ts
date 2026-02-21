@@ -19,6 +19,7 @@ export type {
   SortByKeyPayload,
   DeepEqualPayload,
   ParseCsvPayload,
+  ParseCsvEnhancedPayload,
   WasmOperationType,
   WasmPayload,
   SortByKeyResult,
