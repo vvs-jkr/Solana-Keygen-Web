@@ -1,11 +1,1 @@
-export type {
-  VanitySearchPayload,
-  VanityFoundData,
-  WasmOperationType,
-  WasmPayload,
-  WasmResult,
-  WorkerMessage,
-  WorkerResponse,
-  WorkerTask,
-  WorkerRequest,
-} from './wasm'
+export type { WorkerMessage, WorkerRequest } from './wasm'

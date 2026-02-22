@@ -14,7 +14,6 @@ export function useVanitySearch() {
   })
 
   const workerRef = useRef<Worker | null>(null)
-  const workerReadyRef = useRef(false)
   const searchIdRef = useRef(0)
 
   useEffect(() => {
@@ -24,13 +23,11 @@ export function useVanitySearch() {
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       const msg = event.data
 
-      if (msg.status === 'ready') {
-        workerReadyRef.current = true
-        return
-      }
+      if (msg.status === 'ready') return
 
       if (msg.status === 'progress' && msg.checked !== undefined) {
-        setState(prev => ({ ...prev, checked: msg.checked! }))
+        const checked = msg.checked
+        setState(prev => ({ ...prev, checked }))
         return
       }
 
@@ -83,7 +80,7 @@ export function useVanitySearch() {
 
   const stop = useCallback(() => {
     if (!workerRef.current) return
-    workerRef.current.postMessage({ id: 0, type: 'vanity-stop', payload: {} as any })
+    workerRef.current.postMessage({ id: 0, type: 'vanity-stop' })
     setState(prev => ({ ...prev, status: 'stopped' }))
   }, [])
 

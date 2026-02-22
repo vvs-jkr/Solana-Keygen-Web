@@ -1,1 +1,0 @@
-export { VanityPage } from './vanity'

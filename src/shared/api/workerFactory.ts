@@ -11,20 +11,20 @@ interface MockWorker extends Omit<Worker, 'postMessage' | 'terminate'> {
 }
 
 function createMockWorker(): MockWorker {
-  const mockWorker = {
+  const mockWorker: MockWorker = {
     postMessage: () => {},
     terminate: () => {},
     addEventListener: () => {},
     removeEventListener: () => {},
     dispatchEvent: () => false,
-    onmessage: null as ((event: MessageEvent) => void) | null,
-    onerror: null as ((event: ErrorEvent) => void) | null,
-    onmessageerror: null as ((event: MessageEvent) => void) | null,
-  } as MockWorker
+    onmessage: null,
+    onerror: null,
+    onmessageerror: null,
+  }
 
   setTimeout(() => {
     if (mockWorker.onmessage) {
-      mockWorker.onmessage({ data: { status: 'ready' } } as MessageEvent)
+      mockWorker.onmessage(new MessageEvent('message', { data: { status: 'ready' } }))
     }
   }, 0)
 
