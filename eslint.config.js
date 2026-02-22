@@ -15,8 +15,12 @@ export default [
       'wasm/target/**',
       'node_modules/**',
       'dist/**',
+      'build/**',
       '**/*.min.js',
       '**/*.bundle.js',
+      '**/*.map',
+      // shadcn/ui generated components — не редактируются вручную
+      'src/components/ui/**',
     ],
   },
   {
@@ -90,8 +94,13 @@ export default [
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      '@typescript-eslint/consistent-type-assertions': ['error', {
+        assertionStyle: 'as',
+        objectLiteralTypeAssertions: 'allow-as-parameter',
+      }],
     },
     settings: {
       react: { version: 'detect' },

@@ -1,61 +1,60 @@
-import type { WorkerRequest, WorkerMessage, VanitySearchPayload } from './shared/types'
+import type { WorkerRequest, WorkerMessage } from './shared/types'
 import { loadWasm } from './shared/api/wasm-loader'
 
-let wasmModule: any = null
+type WasmModule = Awaited<ReturnType<typeof loadWasm>>
+
+let wasmModule: WasmModule | null = null
 let stopRequested = false
+
+function send(msg: WorkerMessage) {
+  self.postMessage(msg)
+}
 
 async function initWasm() {
   wasmModule = await loadWasm()
-  self.postMessage({ status: 'ready' } as WorkerMessage)
+  send({ status: 'ready' })
 }
 
-initWasm().catch(error => {
-  self.postMessage({
-    status: 'error',
-    id: -1,
-    error: `Init failed: ${error.message}`,
-  } as WorkerMessage)
+initWasm().catch((error: Error) => {
+  send({ status: 'error', id: -1, error: `Init failed: ${error.message}` })
 })
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
-  const { id, type, payload } = event.data
+  const msg = event.data
 
-  if (type === 'vanity-stop') {
+  if (msg.type === 'vanity-stop') {
     stopRequested = true
     return
   }
 
+  // narrowed to vanity-search
+  const { id, payload } = msg
+
   if (!wasmModule) {
-    self.postMessage({ status: 'error', id, error: 'WASM not initialized' } as WorkerMessage)
+    send({ status: 'error', id, error: 'WASM not initialized' })
     return
   }
 
-  if (type === 'vanity-search') {
-    const { prefix, suffix, caseSensitive, batchSize } = payload as VanitySearchPayload
-    stopRequested = false
-    let totalChecked = 0
+  const { prefix, suffix, caseSensitive, batchSize } = payload
+  stopRequested = false
+  let totalChecked = 0
 
-    while (!stopRequested) {
-      const result = wasmModule.find_vanity_batch(prefix, suffix, caseSensitive, batchSize)
-      totalChecked += batchSize
+  while (!stopRequested) {
+    const result: string | null = wasmModule.find_vanity_batch(prefix, suffix, caseSensitive, batchSize)
+    totalChecked += batchSize
 
-      if (result !== null) {
-        const found = JSON.parse(result)
-        self.postMessage({ status: 'success', id, data: found } as WorkerMessage)
-        return
-      }
-
-      self.postMessage({ status: 'progress', id, checked: totalChecked } as WorkerMessage)
-
-      // yield to event loop so stop message can be processed
-      await new Promise(resolve => setTimeout(resolve, 0))
+    if (result !== null) {
+      send({ status: 'success', id, data: JSON.parse(result) })
+      return
     }
 
-    self.postMessage({ status: 'stopped', id } as WorkerMessage)
-    return
+    send({ status: 'progress', id, checked: totalChecked })
+
+    // yield to event loop so stop message can be processed
+    await new Promise(resolve => setTimeout(resolve, 0))
   }
 
-  self.postMessage({ status: 'error', id, error: `Unknown task type: ${type}` } as WorkerMessage)
+  send({ status: 'stopped', id })
 }
 
 export {}
